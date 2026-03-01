@@ -4,7 +4,6 @@ import common.Person;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -76,12 +75,33 @@ public class Task9 {
   // Есть ли совпадающие в двух коллекциях персоны?
 
   // Комментарий:
-  //    Вместо вложенного цикла для проверки наличия общих персон,
-  // можно создать HashSet из второй коллекции и использовать метод anyMatch для проверки наличия совпадений. 
-  // Это значительно улучшает производительность, особенно при больших коллекциях.
+  //    Вместо вложенного цикла, который работает за O(n*m), 
+  // лучше использовать HashSet для одной из коллекций.
+  // Если одна из коллекций уже является Set, то можно использовать ее напрямую,
+  // что позволит проверить наличие совпадений за O(k), где k - размер другой коллекции.
+  // Если же сетов нет, то лучше выбрать наименьшую по размеру коллекцию и преобразовать ее в сет,
+  // это позволит проверить наличие совпадений за O(n + m) и 
+  // минимизировать время и память для создания HashSet.
+  // Это максимальная оптимизация, хоть и немного усложняет код.
   public boolean hasSamePersons(Collection<Person> persons1, Collection<Person> persons2) {
-    Set<Person> personsSet = new HashSet<>(persons2);
-    return persons1.stream().anyMatch(personsSet::contains);
+    Set<Person> contains;
+    Collection<Person> iterate;
+
+    if (persons1 instanceof Set) {
+      contains = (Set<Person>) persons1;
+      iterate = persons2;
+    } else if (persons2 instanceof Set) {
+      contains = (Set<Person>) persons2;
+      iterate = persons1;
+    } else if (persons1.size() <= persons2.size()) {
+      contains = new HashSet<>(persons1);
+      iterate = persons2;
+    } else {
+      contains = new HashSet<>(persons2);
+      iterate = persons1;
+    }
+
+    return iterate.stream().anyMatch(contains::contains);
   }
 
   // Посчитать число четных чисел
